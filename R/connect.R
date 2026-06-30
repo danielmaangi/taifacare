@@ -32,14 +32,23 @@
 #' @importFrom DBI dbConnect
 #' @importFrom ClickHouseHTTP ClickHouseHTTP
 tc_connect <- function(
-  host     = Sys.getenv("CLICKHOUSE_HOST"),
-  port     = as.integer(Sys.getenv("CLICKHOUSE_PORT")),
-  user     = Sys.getenv("CLICKHOUSE_USER"),
-  password = Sys.getenv("CLICKHOUSE_PASSWORD"),
+  host     = NULL,
+  port     = NULL,
+  user     = NULL,
+  password = NULL,
   db       = "development"
 ) {
-  if (!nzchar(host)) stop("CLICKHOUSE_HOST environment variable is not set.")
-  if (!nzchar(user)) stop("CLICKHOUSE_USER environment variable is not set.")
+  if (!nzchar(Sys.getenv("CLICKHOUSE_HOST")) && file.exists(".env")) {
+    dotenv::load_dot_env()
+  }
+
+  if (is.null(host))     host     <- Sys.getenv("CLICKHOUSE_HOST")
+  if (is.null(port))     port     <- as.integer(Sys.getenv("CLICKHOUSE_PORT"))
+  if (is.null(user))     user     <- Sys.getenv("CLICKHOUSE_USER")
+  if (is.null(password)) password <- Sys.getenv("CLICKHOUSE_PASSWORD")
+
+  if (!nzchar(host)) stop("CLICKHOUSE_HOST is not set. Add it to your .env file or set it with Sys.setenv().")
+  if (!nzchar(user)) stop("CLICKHOUSE_USER is not set. Add it to your .env file or set it with Sys.setenv().")
 
   DBI::dbConnect(
     ClickHouseHTTP::ClickHouseHTTP(),

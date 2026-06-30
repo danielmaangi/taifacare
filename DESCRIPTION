@@ -16,5 +16,6 @@ RoxygenNote: 7.3.2
 Imports:
     ClickHouseHTTP,
     DBI,
+    dotenv,
     dplyr,
     glue

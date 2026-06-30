@@ -20,11 +20,7 @@ CLICKHOUSE_USER=your-user
 CLICKHOUSE_PASSWORD=your-password
 ```
 
-Load them before connecting:
-
-```r
-dotenv::load_dot_env()
-```
+`tc_connect()` loads `.env` automatically if `CLICKHOUSE_HOST` is not already set, so no manual setup step is needed.
 
 ## Usage
 
@@ -81,5 +77,6 @@ DBI::dbDisconnect(con)
 
 - [DBI](https://dbi.r-dbi.org/)
 - [ClickHouseHTTP](https://github.com/IMSMWU/RClickhouse)
+- [dotenv](https://github.com/gaborcsardi/dotenv)
 - [dplyr](https://dplyr.tidyverse.org/)
 - [glue](https://glue.tidyverse.org/)
