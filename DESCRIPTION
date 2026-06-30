@@ -1,0 +1,20 @@
+Package: taifacare
+Type: Package
+Title: Universal Health Coverage Data Transformation and Analysis
+Version: 0.1.0
+Authors@R: person("Daniel", "Maangi", email = "daniel.maangi@apeiro.digital.com",
+    role = c("aut", "cre"))
+Description: Provides tools for fetching, transforming, and analysing
+    universal health coverage (UHC) data from UHC Data Lake Gold Layer
+    in ClickHouse. Covers ERP payment claims (old and new) and provider
+    registries, with parameterised query functions and tidy summarisation 
+    helpers.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.2
+Imports:
+    ClickHouseHTTP,
+    DBI,
+    dplyr,
+    glue
