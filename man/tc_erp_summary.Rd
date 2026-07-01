@@ -7,8 +7,7 @@
 tc_erp_summary(data, amount_col, group_col = "fund_scheme")
 }
 \arguments{
-\item{data}{A data frame, typically from \code{\link{tc_fetch_old_erp}} or
-\code{\link{tc_fetch_new_erp}}.}
+\item{data}{A data frame, typically from \code{\link{tc_fetch_erp}}.}
 
 \item{amount_col}{Character scalar. Name of the column to sum.}
 
@@ -27,9 +26,9 @@ frames returned by the \code{tc_fetch_*()} functions.
 \examples{
 \dontrun{
   con <- tc_connect()
-  old_erp <- tc_fetch_old_erp(con)
-  tc_erp_summary(old_erp, "old_erp_amount")
-  tc_erp_summary(old_erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
+  erp <- tc_fetch_erp(con, source = "old")
+  tc_erp_summary(erp, "old_erp_amount")
+  tc_erp_summary(erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
   DBI::dbDisconnect(con)
 }
 
