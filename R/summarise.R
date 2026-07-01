@@ -4,8 +4,7 @@
 #' returning one row per group. Works with both old-ERP and new-ERP data
 #' frames returned by the \code{tc_fetch_*()} functions.
 #'
-#' @param data A data frame, typically from \code{\link{tc_fetch_old_erp}} or
-#'   \code{\link{tc_fetch_new_erp}}.
+#' @param data A data frame, typically from \code{\link{tc_fetch_erp}}.
 #' @param amount_col Character scalar. Name of the column to sum.
 #' @param group_col Character scalar or vector. Grouping column(s). Default:
 #'   \code{"fund_scheme"}.
@@ -16,9 +15,9 @@
 #' @examples
 #' \dontrun{
 #'   con <- tc_connect()
-#'   old_erp <- tc_fetch_old_erp(con)
-#'   tc_erp_summary(old_erp, "old_erp_amount")
-#'   tc_erp_summary(old_erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
+#'   erp <- tc_fetch_erp(con, source = "old")
+#'   tc_erp_summary(erp, "old_erp_amount")
+#'   tc_erp_summary(erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
 #'   DBI::dbDisconnect(con)
 #' }
 #'

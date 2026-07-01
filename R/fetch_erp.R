@@ -1,102 +1,88 @@
-#' Fetch old ERP payment claims from ClickHouse
+#' Fetch ERP payment claims from ClickHouse
 #'
-#' Queries the old ERP claims table and returns aggregated claim amounts by
-#' facility and fund scheme, filtered by claim state and payment status.
+#' Queries old ERP, new ERP (IFS), or both claims tables and returns
+#' aggregated claim amounts by facility and fund scheme. By default both
+#' sources are fetched and joined on \code{fid_code} / \code{fund_scheme}.
 #'
 #' @param con A DBI connection, typically from \code{\link{tc_connect}}.
-#' @param states Character vector of claim states to include. Default:
-#'   \code{"done"}.
+#' @param source Character scalar. Which source to fetch: \code{"both"}
+#'   (default), \code{"old"}, or \code{"new"}.
 #' @param payment_statuses Character vector of payment statuses to include.
 #'   Default: \code{"paid"}.
-#' @param schema Character scalar. Source schema name. Default: \code{"erp"}.
-#' @param table Character scalar. Source table name. Default:
+#' @param states Character vector of claim states to include (old ERP only).
+#'   Default: \code{"done"}.
+#' @param old_table Character scalar. Old ERP table name. Default:
 #'   \code{"account_payable_claims_test"}.
-#'
-#' @return A data frame with columns \code{fid_code}, \code{fund_scheme}, and
-#'   \code{old_erp_amount}.
-#'
-#' @seealso \code{\link{tc_fetch_new_erp}}, \code{\link{tc_erp_summary}}
-#'
-#' @examples
-#' \dontrun{
-#'   con <- tc_connect()
-#'   old_erp <- tc_fetch_old_erp(con)
-#'   old_erp <- tc_fetch_old_erp(con, states = c("done", "partial"))
-#'   DBI::dbDisconnect(con)
-#' }
-#'
-#' @export
-#' @importFrom DBI dbGetQuery
-#' @importFrom glue glue
-tc_fetch_old_erp <- function(
-  con,
-  states           = "done",
-  payment_statuses = "paid",
-  schema           = "erp",
-  table            = "account_payable_claims_test"
-) {
-  states_sql           <- paste(sprintf("'%s'", states),           collapse = ", ")
-  payment_statuses_sql <- paste(sprintf("'%s'", payment_statuses), collapse = ", ")
-
-  sql <- glue::glue("
-    SELECT
-      vendor_code AS fid_code,
-      fund_scheme,
-      sum(claim_amount) AS old_erp_amount
-    FROM {schema}.{table} FINAL
-    WHERE state IN ({states_sql})
-      AND payment_status IN ({payment_statuses_sql})
-    GROUP BY fid_code, fund_scheme
-  ")
-
-  DBI::dbGetQuery(con, sql)
-}
-
-
-#' Fetch new ERP payment claims from ClickHouse
-#'
-#' Queries the new ERP (IFS) claims table and returns aggregated claim amounts
-#' by facility and fund scheme, filtered by payment status.
-#'
-#' @param con A DBI connection, typically from \code{\link{tc_connect}}.
-#' @param payment_statuses Character vector of payment statuses to include.
-#'   Default: \code{"paid"}.
-#' @param schema Character scalar. Source schema name. Default: \code{"erp"}.
-#' @param table Character scalar. Source table name. Default:
+#' @param new_table Character scalar. New ERP (IFS) table name. Default:
 #'   \code{"ifs_test"}.
+#' @param schema Character scalar. Schema containing both tables. Default:
+#'   \code{"erp"}.
 #'
-#' @return A data frame with columns \code{fid_code}, \code{fund_scheme}, and
-#'   \code{new_erp_amount}.
+#' @return A data frame. When \code{source = "both"}, columns are
+#'   \code{fid_code}, \code{fund_scheme}, \code{old_erp_amount}, and
+#'   \code{new_erp_amount} (full join; NAs where a facility appears in only
+#'   one source). When \code{source = "old"} or \code{"new"}, only the
+#'   corresponding amount column is returned.
 #'
-#' @seealso \code{\link{tc_fetch_old_erp}}, \code{\link{tc_erp_summary}}
+#' @seealso \code{\link{tc_erp_summary}}
 #'
 #' @examples
 #' \dontrun{
 #'   con <- tc_connect()
-#'   new_erp <- tc_fetch_new_erp(con)
+#'
+#'   erp <- tc_fetch_erp(con)                          # both sources
+#'   erp <- tc_fetch_erp(con, source = "old")          # old ERP only
+#'   erp <- tc_fetch_erp(con, source = "new", payment_statuses = "unpaid")
+#'   erp <- tc_fetch_erp(con, states = c("done", "partial"))
+#'
 #'   DBI::dbDisconnect(con)
 #' }
 #'
 #' @export
 #' @importFrom DBI dbGetQuery
 #' @importFrom glue glue
-tc_fetch_new_erp <- function(
+#' @importFrom dplyr full_join
+tc_fetch_erp <- function(
   con,
+  source           = c("both", "old", "new"),
   payment_statuses = "paid",
-  schema           = "erp",
-  table            = "ifs_test"
+  states           = "done",
+  old_table        = "account_payable_claims_test",
+  new_table        = "ifs_test",
+  schema           = "erp"
 ) {
+  source               <- match.arg(source)
   payment_statuses_sql <- paste(sprintf("'%s'", payment_statuses), collapse = ", ")
 
-  sql <- glue::glue("
-    SELECT
-      fid_code,
-      fund_scheme,
-      sum(claim_amount) AS new_erp_amount
-    FROM {schema}.{table} FINAL
-    WHERE payment_status IN ({payment_statuses_sql})
-    GROUP BY fid_code, fund_scheme
-  ")
+  if (source %in% c("both", "old")) {
+    states_sql <- paste(sprintf("'%s'", states), collapse = ", ")
+    old_data   <- DBI::dbGetQuery(con, glue::glue("
+      SELECT
+        vendor_code AS fid_code,
+        fund_scheme,
+        sum(claim_amount) AS old_erp_amount
+      FROM {schema}.{old_table} FINAL
+      WHERE state IN ({states_sql})
+        AND payment_status IN ({payment_statuses_sql})
+      GROUP BY fid_code, fund_scheme
+    "))
+  }
 
-  DBI::dbGetQuery(con, sql)
+  if (source %in% c("both", "new")) {
+    new_data <- DBI::dbGetQuery(con, glue::glue("
+      SELECT
+        fid_code,
+        fund_scheme,
+        sum(claim_amount) AS new_erp_amount
+      FROM {schema}.{new_table} FINAL
+      WHERE payment_status IN ({payment_statuses_sql})
+      GROUP BY fid_code, fund_scheme
+    "))
+  }
+
+  switch(source,
+    old  = old_data,
+    new  = new_data,
+    both = dplyr::full_join(old_data, new_data, by = c("fid_code", "fund_scheme"))
+  )
 }

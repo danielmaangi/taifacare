@@ -39,22 +39,26 @@ con <- tc_connect(db = "production")       # switch database
 # Provider registry
 providers <- tc_fetch_providers(con)
 
-# ERP payment claims
-old_erp <- tc_fetch_old_erp(con)
-new_erp <- tc_fetch_new_erp(con)
+# ERP payment claims — both sources by default (full join)
+erp <- tc_fetch_erp(con)
 
-# Filter by state / payment status
-old_erp <- tc_fetch_old_erp(con, states = c("done", "partial"), payment_statuses = "paid")
+# One source only
+erp <- tc_fetch_erp(con, source = "old")
+erp <- tc_fetch_erp(con, source = "new")
+
+# Filter by payment status or claim state (state applies to old ERP only)
+erp <- tc_fetch_erp(con, payment_statuses = "unpaid")
+erp <- tc_fetch_erp(con, source = "old", states = c("done", "partial"))
 ```
 
 ### Summarise
 
 ```r
 # Total by fund scheme (default)
-tc_erp_summary(old_erp, "old_erp_amount")
+tc_erp_summary(erp, "old_erp_amount")
 
 # Total by county and fund scheme
-tc_erp_summary(old_erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
+tc_erp_summary(erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
 ```
 
 ### Disconnect
@@ -69,8 +73,7 @@ DBI::dbDisconnect(con)
 |---|---|
 | `tc_connect()` | Open a ClickHouse connection |
 | `tc_fetch_providers()` | Fetch the provider registry |
-| `tc_fetch_old_erp()` | Fetch old ERP payment claims |
-| `tc_fetch_new_erp()` | Fetch new ERP (IFS) payment claims |
+| `tc_fetch_erp()` | Fetch ERP claims (old, new, or both) |
 | `tc_erp_summary()` | Summarise claim amounts by group |
 
 ## Dependencies
