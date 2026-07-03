@@ -5,8 +5,8 @@
 #' to 10,000 rows and CSV for larger ones. The correct file extension is
 #' appended automatically if the path does not already include one.
 #'
-#' Excel output includes a styled header row, frozen top row, auto-fit column
-#' widths, and numeric columns pre-formatted with comma separators.
+#' Excel output includes a styled header row, frozen top row, and auto-fit
+#' column widths. Data is written as-is with no pre-formatting.
 #'
 #' @param data A data frame to export.
 #' @param path Character scalar. Destination file path (with or without
@@ -46,14 +46,6 @@ tc_save <- function(data, path, format = c("auto", "excel", "csv")) {
     utils::write.csv(data, path, row.names = FALSE)
     message("Saved CSV: ", path)
     return(invisible(path))
-  }
-
-  # Format numeric columns before writing so Excel sees clean comma strings
-  numeric_cols <- which(vapply(data, is.numeric, logical(1)))
-  if (length(numeric_cols)) {
-    data[numeric_cols] <- lapply(data[numeric_cols], function(x) {
-      format(x, big.mark = ",", scientific = FALSE, trim = TRUE)
-    })
   }
 
   n_rows <- nrow(data)
