@@ -66,6 +66,14 @@ tc_erp_monthly(con, source = "old")
 tc_erp_monthly(con, source = "new", payment_statuses = "unpaid")
 ```
 
+### Save output
+
+```r
+tc_save(erp, "erp_claims")              # auto: excel for small tables, csv for large
+tc_save(erp, "erp_claims", "csv")       # force CSV
+tc_save(erp, "erp_claims", "excel")     # force Excel
+```
+
 ### Disconnect
 
 ```r
@@ -81,6 +89,7 @@ DBI::dbDisconnect(con)
 | `tc_fetch_erp()` | Fetch ERP claims (old, new, or both) |
 | `tc_erp_summary()` | Summarise claim amounts by group |
 | `tc_erp_monthly()` | Wide table of paid claims by month and fund scheme |
+| `tc_save()` | Export a data frame to formatted Excel or CSV |
 
 ## Dependencies
 
@@ -90,3 +99,4 @@ DBI::dbDisconnect(con)
 - [dplyr](https://dplyr.tidyverse.org/)
 - [glue](https://glue.tidyverse.org/)
 - [tidyr](https://tidyr.tidyverse.org/)
+- [openxlsx](https://ycphs.github.io/openxlsx/)
