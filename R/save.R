@@ -76,6 +76,18 @@ tc_save <- function(data, path, format = c("auto", "excel", "csv")) {
     openxlsx::addStyle(wb, "Data", body_style,
                        rows = seq(2, n_rows + 1), cols = seq_len(n_cols),
                        gridExpand = TRUE)
+
+    date_cols <- which(vapply(data, function(x) inherits(x, c("Date", "POSIXct", "POSIXlt")), logical(1)))
+    if (length(date_cols)) {
+      date_style <- openxlsx::createStyle(
+        numFmt       = "YYYY-MM-DD",
+        border       = "TopBottomLeftRight",
+        borderColour = "#D9D9D9"
+      )
+      openxlsx::addStyle(wb, "Data", date_style,
+                         rows = seq(2, n_rows + 1), cols = date_cols,
+                         gridExpand = TRUE)
+    }
   }
 
   openxlsx::setColWidths(wb, "Data", cols = seq_len(n_cols), widths = "auto")
