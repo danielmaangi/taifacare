@@ -17,5 +17,6 @@ Imports:
     DBI,
     dotenv,
     dplyr,
-    glue
+    glue,
+    tidyr
 Config/roxygen2/version: 8.0.0

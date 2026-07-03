@@ -59,6 +59,11 @@ tc_erp_summary(erp, "old_erp_amount")
 
 # Total by county and fund scheme
 tc_erp_summary(erp, "old_erp_amount", group_col = c("county", "fund_scheme"))
+
+# Monthly totals — wide table with one column per fund scheme + total
+tc_erp_monthly(con)                      # both sources
+tc_erp_monthly(con, source = "old")
+tc_erp_monthly(con, source = "new", payment_statuses = "unpaid")
 ```
 
 ### Disconnect
@@ -75,6 +80,7 @@ DBI::dbDisconnect(con)
 | `tc_fetch_providers()` | Fetch the provider registry |
 | `tc_fetch_erp()` | Fetch ERP claims (old, new, or both) |
 | `tc_erp_summary()` | Summarise claim amounts by group |
+| `tc_erp_monthly()` | Wide table of paid claims by month and fund scheme |
 
 ## Dependencies
 
@@ -83,3 +89,4 @@ DBI::dbDisconnect(con)
 - [dotenv](https://github.com/gaborcsardi/dotenv)
 - [dplyr](https://dplyr.tidyverse.org/)
 - [glue](https://glue.tidyverse.org/)
+- [tidyr](https://tidyr.tidyverse.org/)
