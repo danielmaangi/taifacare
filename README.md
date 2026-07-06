@@ -66,6 +66,17 @@ tc_erp_monthly(con, source = "old")
 tc_erp_monthly(con, source = "new", payment_statuses = "unpaid")
 ```
 
+### Validate FIDs
+
+```r
+result <- tc_check_fids(erp, "fid_code")
+result$summary          # unique invalid values + counts
+result$invalid_rows     # full rows that failed
+
+# Works on any dataset and column
+tc_check_fids(providers, "pro_fid_code")
+```
+
 ### Save output
 
 ```r
@@ -90,6 +101,7 @@ DBI::dbDisconnect(con)
 | `tc_erp_summary()` | Summarise claim amounts by group |
 | `tc_erp_monthly()` | Wide table of paid claims by month and fund scheme |
 | `tc_save()` | Export a data frame to formatted Excel or CSV |
+| `tc_check_fids()` | Flag rows with invalid FID values and summarise them |
 
 ## Dependencies
 
